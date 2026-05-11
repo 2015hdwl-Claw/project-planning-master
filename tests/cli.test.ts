@@ -52,6 +52,27 @@ describe("parseArgs", () => {
     const result = parseArgs(["generate", "test"]);
     expect(result.error).toBeDefined();
   });
+
+  test("parses --type flag", () => {
+    const result = parseArgs(["generate", "test", "--display", "測試", "--type", "cli-tool"]);
+    expect(result.projectType).toBe("cli-tool");
+  });
+
+  test("parses --field flag for custom fields", () => {
+    const result = parseArgs([
+      "generate", "test", "--display", "測試",
+      "--field", "AUTHOR=Bob",
+      "--field", "LICENSE=MIT",
+    ]);
+    expect(result.customFields).toBeDefined();
+    expect(result.customFields!.AUTHOR).toBe("Bob");
+    expect(result.customFields!.LICENSE).toBe("MIT");
+  });
+
+  test("ignores --field with missing value", () => {
+    const result = parseArgs(["generate", "test", "--display", "測試", "--field"]);
+    expect(result.customFields).toBeUndefined();
+  });
 });
 
 describe("runCommand", () => {

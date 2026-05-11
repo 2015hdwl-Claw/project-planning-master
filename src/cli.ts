@@ -11,6 +11,8 @@ export interface CliArgs {
   displayName?: string;
   description?: string;
   path?: string;
+  projectType?: string;
+  customFields?: Record<string, string>;
   error?: string;
 }
 
@@ -51,6 +53,20 @@ export function parseArgs(args: string[]): CliArgs {
   const description = descIdx > -1 ? args[descIdx + 1] : undefined;
   const path = pathIdx > -1 ? args[pathIdx + 1] : DEFAULT_PROJECTS_PATH;
 
+  const typeIdx = args.indexOf("--type");
+  const projectType = typeIdx > -1 ? args[typeIdx + 1] : undefined;
+
+  // Parse custom fields: --field key=value
+  const customFields: Record<string, string> = {};
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === "--field" && args[i + 1]) {
+      const [key, ...valueParts] = args[i + 1].split("=");
+      if (key && valueParts.length > 0) {
+        customFields[key] = valueParts.join("=");
+      }
+    }
+  }
+
   if (command === "generate" && !displayName) {
     return { command, error: "--display flag is required for generate command" };
   }
@@ -61,6 +77,8 @@ export function parseArgs(args: string[]): CliArgs {
     displayName,
     description: description || "",
     path,
+    projectType,
+    customFields: Object.keys(customFields).length > 0 ? customFields : undefined,
   };
 }
 
@@ -91,6 +109,8 @@ function runGenerate(args: CliArgs): CliResult {
     displayName: args.displayName!,
     description: args.description || "",
     targetPath,
+    projectType: args.projectType,
+    customFields: args.customFields,
   });
 
   if (result.success) {
@@ -189,7 +209,7 @@ function runHelp(): CliResult {
     "Project Planning Master - 專案規劃大師 CLI",
     "",
     "Usage:",
-    "  ppm generate <name> --display <displayName> [--desc <desc>] [--path <path>]",
+    "  ppm generate <name> --display <displayName> [--desc <desc>] [--path <path>] [--type <type>] [--field key=value]",
     "  ppm validate <name> [--path <path>]",
     "  ppm scan [--path <path>]",
     "  ppm help",
@@ -204,6 +224,8 @@ function runHelp(): CliResult {
     "  --display  Display name for the project (required for generate)",
     "  --desc     Project description",
     "  --path     Target directory path (default: C:\\Users\\ntpud\\.claude\\projects)",
+    "  --type     Project type: web-app (default), cli-tool, library",
+    "  --field    Custom field (key=value, repeatable)",
   ];
   return { success: true, output: lines.join("\n") };
 }
