@@ -1,7 +1,16 @@
 {
   "name": "project-planning-master",
-  "module": "index.ts",
+  "module": "src/cli.ts",
   "type": "module",
+  "bin": {
+    "ppm": "src/cli.ts"
+  },
+  "scripts": {
+    "test": "bun test",
+    "generate": "bun run src/cli.ts generate",
+    "validate": "bun run src/cli.ts validate",
+    "scan": "bun run src/cli.ts scan"
+  },
   "private": true,
   "devDependencies": {
     "@types/bun": "latest"
